@@ -3,20 +3,21 @@ from time import sleep
 from bs4 import BeautifulSoup
 from csv import writer
 
-class Targets:
-    def __init__(self, page, price, rooms):
-        self.page = page
+class WebScrape:
+    def __init__(self, price, rooms):
         self.price = price
         self.rooms = rooms
 
-        site_url = "https://www.homegate.ch/rent/apartment/city-zurich/matching-list"
-        self.url = site_url + "?ep=" + str(page) + "&ac=" + str(rooms) + "&ipd=false" + "&ah=" + str(price)
+        self.site_url = "https://www.homegate.ch/rent/apartment/city-zurich/matching-list"
 
-        headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
+        self.headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
 
+    def reach_site(self, page):
+        url = self.site_url + "?ep=" + str(page) + "&ac=" + str(self.rooms) + "&ipd=false" + "&ah=" + str(self.price)
         s = requests.Session()
+
         try:
-            r = s.get(self.url, headers=headers)
+            r = s.get(url, headers=self.headers)
             print(r)
 
         except requests.exceptions.Timeout as ex:
@@ -54,7 +55,7 @@ class Targets:
 
         return price
 
-    def targets(self, show=None):
+    def page_targets(self, show=None):
         targets = []
 
         for info in self.infos:
@@ -71,23 +72,23 @@ class Targets:
 
         return targets
 
-n_pages = 1 
+    def get_data(self, n_pages, timeout, show=None):
+        data = [
+            ["price", "rooms", "meters", "address"]
+        ]
 
-data = [
-    ["price", "rooms", "meters", "address"]
-]
+        for page in range(n_pages):
+            print(f"\n------- PAGE NUMBER {page} -------")
 
-for i in range(n_pages):
-    print(f"------- PAGE NUMBER {i} -------")
+            self.reach_site(page)
+            pt = self.page_targets(show=show)
+            data.append(pt)
 
-    obj = Targets(i, None, None)
-    data.append(obj.targets(show=True))
+            sleep(timeout)
 
-    sleep(1.5)
+        path = "data.csv"
+        with open(path, mode="w", newline="") as file:
+            w = writer(file)
+            w.writerows(data)
 
-path = "data.csv"
-with open(path, mode="w", newline="") as file:
-    w = writer(file)
-    w.writerows(data)
-
-print(f"CSV file '{path}' created successfully")
+        print(f"CSV file '{path}' created successfully")
