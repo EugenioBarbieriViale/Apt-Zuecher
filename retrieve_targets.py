@@ -15,9 +15,12 @@ class Targets:
         headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
 
         s = requests.Session()
-        r = s.get(self.url, headers=headers)
+        try:
+            r = s.get(self.url, headers=headers)
+            print(r)
 
-        print(r)
+        except requests.exceptions.Timeout as ex:
+            print("Exception raised: ", ex)
 
         self.soup = BeautifulSoup(r.content, "html.parser")
         self.infos = self.soup.find_all("div", attrs={"class": "HgListingCard_info_RKrwz"})
