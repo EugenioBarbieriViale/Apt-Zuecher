@@ -10,9 +10,10 @@ class Targets:
         site_url = "https://www.homegate.ch/rent/apartment/city-zurich/matching-list"
         self.url = site_url + "?ep=" + str(page) + "&ac=" + str(rooms) + "&ipd=false" + "&ah=" + str(price)
 
-    def reach_site(self):
         r = requests.get(self.url)
         self.soup = BeautifulSoup(r.content, "html.parser")
+        self.infos = self.soup.find_all("div", attrs={"class": "HgListingCard_info_RKrwz"})
+        # self.infos = self.soup.find("div", attrs={"class": "HgListingCard_info_RKrwz"})
 
     def get_number_results(self):
         results_buttons = self.soup.find_all("span", attrs={"class": "HgButton_content_RMjt_"})
@@ -27,60 +28,53 @@ class Targets:
             if c.isdigit():
                 ans += str(c)
 
-        # print(ans)
         self.n_results = int(ans)
         return self.n_results
 
-    def get_prices(self):
-        prices = self.soup.find_all("span", attrs={"class": "HgListingCard_price_JoPAs"})
+    def get_space(self, info):
+        space = info.find("div", class_="HgListingRoomsLivingSpace_roomsLivingSpace_GyVgq").get_text()
 
-        ans = []
-        for line in prices:
-            chunk = []
-            for c in line.get_text():
-                if c.isdigit():
-                    chunk.append(c)
-            ans.append("".join(chunk))
+        rooms = []
+        for i in range(len(space)):
+            if i <= 4:
+                if space[i].isdigit() or space[i] == ".":
+                    rooms.append(space[i])
+            else:
+                rooms = "".join(rooms)
+                break
 
-        # print(f"Found {len(ans)} results:", ans)
-        return ans 
+        meters = []
+        for i in range(8, len(space)):
+            if space[i].isdigit() or space[i] == "m" or space[i] == "²":
+                meters.append(space[i])
 
-    def get_space(self):
-        space = self.soup.find_all("div", attrs={"class": "HgListingRoomsLivingSpace_roomsLivingSpace_GyVgq"})
-        
-        ans = []
-        for line in space:
-            chunk = []
-            for elem in line.find_all("strong"):
-                chunk.append(elem.get_text())
-            ans.append(chunk)
-        # print(f"Found {len(ans)} results:", ans)
-        return ans
+        meters = "".join(meters)
 
-    def get_address(self):
-        addr = self.soup.find_all("address", attrs={"translate": "no"})
-        ans = []
-        for a in addr:
-            ans.append(a.get_text())
+        return rooms, meters
 
-        # print(f"Found {len(ans)} results:", ans)
-        return ans
+    def get_price(self, info):
+        price = info.find("span", class_="HgListingCard_price_JoPAs").get_text()[4:10]
 
-    def targets(self):
-        p = self.get_prices()
-        s = self.get_space()
-        a = self.get_address()
+        if price == "ce on ":
+            return "Price on request" 
 
-        self.targets = []
-        # for i in range(self.n_results):
-        for i in range(len(s)):
-            self.targets.append(dict(price=p[i], space=s[i], addr=a[i]))
+        return price
 
-        return self.targets
-        
+    def get_info(self, show=None):
+        targets = []
+
+        for info in self.infos:
+            price = self.get_price(info)
+            rooms, meters = self.get_space(info)
+            address = info.find("address", attrs={"translate": "no"}).get_text()
+
+            t = dict(price=price, rooms=rooms, meters=meters, address=address)
+            targets.append(t)
+
+            if show == True:
+                print(t)
+
+        return targets
+
 obj = Targets(None, 2000, 3)
-obj.reach_site()
-obj.get_number_results()
-
-for i in obj.targets():
-    print(i)
+obj.get_info(show=True)
