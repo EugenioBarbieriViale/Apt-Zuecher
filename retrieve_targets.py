@@ -10,12 +10,15 @@ class Targets:
         site_url = "https://www.homegate.ch/rent/apartment/city-zurich/matching-list"
         self.url = site_url + "?ep=" + str(page) + "&ac=" + str(rooms) + "&ipd=false" + "&ah=" + str(price)
 
-        r = requests.get(self.url)
+        headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
+
+        s = requests.Session()
+        r = s.get(self.url, headers=headers)
+
         self.soup = BeautifulSoup(r.content, "html.parser")
         self.infos = self.soup.find_all("div", attrs={"class": "HgListingCard_info_RKrwz"})
-        # self.infos = self.soup.find("div", attrs={"class": "HgListingCard_info_RKrwz"})
 
-    def get_number_results(self):
+    def get_number_results(self, show=None):
         results_buttons = self.soup.find_all("span", attrs={"class": "HgButton_content_RMjt_"})
 
         for i in range(len(results_buttons)):
@@ -27,6 +30,9 @@ class Targets:
         for c in str_results:
             if c.isdigit():
                 ans += str(c)
+
+        if show == True:
+            print(ans)
 
         self.n_results = int(ans)
         return self.n_results
@@ -77,4 +83,5 @@ class Targets:
         return targets
 
 obj = Targets(None, 2000, 3)
+obj.get_number_results()
 obj.get_info(show=True)
