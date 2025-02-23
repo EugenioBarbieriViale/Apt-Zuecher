@@ -3,17 +3,17 @@ from geopy import distance
 
 import webscrape
 
-geolocator = Nominatim(user_agent="myapp")
+# geolocator = Nominatim(user_agent="myapp")
 
-destination = geolocator.geocode("ETH Zurich")
-target = geolocator.geocode("Pilatusstrasse 7, 8032 Zürich")
+# destination = geolocator.geocode("ETH Zurich")
+# target = geolocator.geocode("Pilatusstrasse 7, 8032 Zürich")
 
-gps_dest = (destination.latitude, destination.longitude)
-gps_targ = (target.latitude, target.longitude)
+# gps_dest = (destination.latitude, destination.longitude)
+# gps_targ = (target.latitude, target.longitude)
 
-distance = distance.geodesic(gps_dest, gps_targ).km
+# distance = distance.geodesic(gps_dest, gps_targ).km
 
-print(distance)
+# print(distance)
 
 w = webscrape.WebScrape(None, None)
-w.get_data(1, 1.5, show=True)
+w.get_data(50, timeout=10, show=True)

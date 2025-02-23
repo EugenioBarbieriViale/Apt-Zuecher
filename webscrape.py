@@ -23,8 +23,8 @@ class WebScrape:
         except requests.exceptions.Timeout as ex:
             print("Exception raised: ", ex)
 
-        self.soup = BeautifulSoup(r.content, "html.parser")
-        self.infos = self.soup.find_all("div", attrs={"class": "HgListingCard_info_RKrwz"})
+        soup = BeautifulSoup(r.content, "html.parser")
+        self.infos = soup.find_all("div", attrs={"class": "HgListingCard_info_RKrwz"})
 
     def get_space(self, info):
         space = info.find("div", class_="HgListingRoomsLivingSpace_roomsLivingSpace_GyVgq").get_text()
@@ -40,53 +40,59 @@ class WebScrape:
 
         meters = []
         for i in range(8, len(space)):
-            if space[i].isdigit() or space[i] == "m" or space[i] == "²":
+            if space[i].isdigit() and space[i] != "²":
                 meters.append(space[i])
 
         meters = "".join(meters)
 
-        return rooms, meters
+        if "²" in rooms:
+            meters = rooms.replace("²", "")
+            rooms = 0
+
+        if meters == "":
+            meters = 0
+
+        if rooms == "":
+            rooms = 0
+
+        return float(rooms), int(meters)
 
     def get_price(self, info):
-        price = info.find("span", class_="HgListingCard_price_JoPAs").get_text()[4:10]
+        price = info.find("span", class_="HgListingCard_price_JoPAs").get_text()[4:10].replace(",", "")
 
         if price == "ce on ":
-            return "Price on request" 
+            return 0
 
-        return price
+        price = "".join(c for c in price if c.isdigit())
 
-    def page_targets(self, show=None):
-        targets = []
+        return int(price)
 
-        for info in self.infos:
-            price = self.get_price(info)
-            rooms, meters = self.get_space(info)
-            address = info.find("address", attrs={"translate": "no"}).get_text()
-
-            # t = dict(price=price, rooms=rooms, meters=meters, address=address)
-            t = [price, rooms, meters, address]
-            targets.append(t)
-
-            if show == True:
-                print(t)
-
-        return targets
-
-    def get_data(self, n_pages, timeout, show=None):
+    def get_data(self, n_pages, timeout=2, path="data.csv", show=None):
         data = [
-            ["price", "rooms", "meters", "address"]
+            ["n", "price", "rooms", "meters", "address"]
         ]
+
+        c = 0
 
         for page in range(n_pages):
             print(f"\n------- PAGE NUMBER {page} -------")
 
             self.reach_site(page)
-            pt = self.page_targets(show=show)
-            data.append(pt)
+
+            for info in self.infos:
+                price = self.get_price(info)
+                rooms, meters = self.get_space(info)
+                address = info.find("address", attrs={"translate": "no"}).get_text()
+
+                t = [c, price, rooms, meters, address]
+                data.append(t)
+                c += 1
+
+                if show == True:
+                    print(t)
 
             sleep(timeout)
 
-        path = "data.csv"
         with open(path, mode="w", newline="") as file:
             w = writer(file)
             w.writerows(data)
