@@ -1,5 +1,7 @@
 import requests
+from time import sleep
 from bs4 import BeautifulSoup
+from csv import writer
 
 class Targets:
     def __init__(self, page, price, rooms):
@@ -15,27 +17,10 @@ class Targets:
         s = requests.Session()
         r = s.get(self.url, headers=headers)
 
+        print(r)
+
         self.soup = BeautifulSoup(r.content, "html.parser")
         self.infos = self.soup.find_all("div", attrs={"class": "HgListingCard_info_RKrwz"})
-
-    def get_number_results(self, show=None):
-        results_buttons = self.soup.find_all("span", attrs={"class": "HgButton_content_RMjt_"})
-
-        for i in range(len(results_buttons)):
-            if i == 1:
-                str_results = str(results_buttons[i].string)
-                break
-
-        ans = ""
-        for c in str_results:
-            if c.isdigit():
-                ans += str(c)
-
-        if show == True:
-            print(ans)
-
-        self.n_results = int(ans)
-        return self.n_results
 
     def get_space(self, info):
         space = info.find("div", class_="HgListingRoomsLivingSpace_roomsLivingSpace_GyVgq").get_text()
@@ -66,7 +51,7 @@ class Targets:
 
         return price
 
-    def get_info(self, show=None):
+    def targets(self, show=None):
         targets = []
 
         for info in self.infos:
@@ -74,7 +59,8 @@ class Targets:
             rooms, meters = self.get_space(info)
             address = info.find("address", attrs={"translate": "no"}).get_text()
 
-            t = dict(price=price, rooms=rooms, meters=meters, address=address)
+            # t = dict(price=price, rooms=rooms, meters=meters, address=address)
+            t = [price, rooms, meters, address]
             targets.append(t)
 
             if show == True:
@@ -82,6 +68,23 @@ class Targets:
 
         return targets
 
-obj = Targets(None, 2000, 3)
-obj.get_number_results()
-obj.get_info(show=True)
+n_pages = 1 
+
+data = [
+    ["price", "rooms", "meters", "address"]
+]
+
+for i in range(n_pages):
+    print(f"------- PAGE NUMBER {i} -------")
+
+    obj = Targets(i, None, None)
+    data.append(obj.targets(show=True))
+
+    sleep(1.5)
+
+path = "data.csv"
+with open(path, mode="w", newline="") as file:
+    w = writer(file)
+    w.writerows(data)
+
+print(f"CSV file '{path}' created successfully")
