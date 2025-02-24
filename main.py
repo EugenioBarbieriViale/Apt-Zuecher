@@ -3,6 +3,7 @@ from time import sleep
 
 import pandas as pd
 import matplotlib.pyplot as plt
+from numpy import array, argsort
 
 import webscrape
 
@@ -42,4 +43,43 @@ def price_dist_graph():
     plt.scatter(distances, prices)
     plt.show()
 
-price_dist_graph()
+
+def loss(p, m, r, d):
+    if p != 0.0 and m != 0.0:
+        return p / m 
+    return 10.0
+
+limit_price = 4000
+limit_rooms = 3.0
+
+targets = []
+for i in range(len(prices)):
+    if prices[i] <= limit_price and rooms[i] >= limit_rooms:
+        targets.append([prices[i], meters[i], rooms[i], addresses[i], distances[i]])
+
+max_price = max(targets[1:])[0][0]
+max_meter = max(targets[1:])[1][0]
+max_room = max(targets[1:])[2][0]
+max_distance = max(targets[1:])[4][0]
+# print(max_price, max_meters, max_rooms, max_distances)
+
+scores = []
+for i in range(len(targets)):
+    p = float(targets[i][0][0]) / float(max_price)
+    m = float(targets[i][1][0]) / float(max_meter)
+    r = float(targets[i][2][0]) / float(max_room)
+    d = float(targets[i][4][0]) / float(max_distance)
+
+    score = loss(p, m, r, d)
+    scores.append(score)
+
+np_scores = array(scores)
+sorted_indices = np_scores.argsort()
+# sorted_scores = np_scores[sorted_indices]
+
+# scores = list(enumerate(scores))
+# scores.sort(key=lambda:x[1])
+
+for i in reversed(range(10)):
+    best_apartment = targets[sorted_indices[i]]
+    print(best_apartment[0][0], best_apartment[1][0], best_apartment[2][0], best_apartment[3][0])
