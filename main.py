@@ -7,25 +7,30 @@ import matplotlib.pyplot as plt
 import webscrape
 
 
-# filename = "data/homegate.csv"
-filename = "data/d.csv"
+filename = "data/homegate.csv"
 
 if not path.isfile(filename):
     w = webscrape.WebScrape(None, None)
-    w.get_data(start_page=1, end_page=51, timeout=7, path=filename, show=True)
+    w.write_data(start_page=1, end_page=51, timeout=7, path=filename, show=True)
 
 prices = pd.read_csv(filename, usecols=["price"]).values
 rooms = pd.read_csv(filename, usecols=["rooms"]).values
 meters = pd.read_csv(filename, usecols=["meters"]).values
 addresses = pd.read_csv(filename, usecols=["address"]).values
 
+dist_file = "data/distances.csv"
+
+# if not path.isfile(dist_file):
+#     w = webscrape.WebScrape(None, None)
+#     w.write_distances(addresses, path=dist_file, timeout=8, show=True)
+
+
 def show_graph():
     plt.title("Apartments from homegate.ch")
-    plt.xlabel("Meter per square (m^2)")
+    plt.xlabel("Square meters (m^2)")
     plt.ylabel("Price (CHF)")
 
     plt.scatter(meters, prices)
     plt.show()
 
-def assign_score(p, r, m, d):
-    return p - r - m + d 
+show_graph()

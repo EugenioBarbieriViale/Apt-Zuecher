@@ -2,7 +2,6 @@ import requests
 from time import sleep
 from bs4 import BeautifulSoup
 from csv import writer
-
 from geopy.geocoders import Nominatim
 from geopy import distance
 
@@ -71,21 +70,9 @@ class WebScrape:
 
         return int(price)
 
-    def get_distance(self, address):
-        geolocator = Nominatim(user_agent="myapp")
-
-        target = geolocator.geocode(address)
-        destination = geolocator.geocode("Rämistrasse 101 8092 Zurich")
-
-        gps_targ = (target.latitude, target.longitude)
-        gps_dest = (destination.latitude, destination.longitude)
-
-        dist = distance.geodesic(gps_dest, gps_targ).km
-        return round(dist, 2)
-
-    def get_data(self, start_page=1, end_page=51, timeout=2, path="data.csv", show=None):
-        data = [
-            ["price", "rooms", "meters", "address", "distance"]
+    def write_data(self, start_page=1, end_page=51, timeout=2, path="data.csv", show=None):
+        self.data = [
+            ["price", "rooms", "meters", "address"]
         ]
 
         for page in range(start_page, end_page):
@@ -98,21 +85,43 @@ class WebScrape:
                 rooms, meters = self.get_space(info)
                 address = info.find("address", attrs={"translate": "no"}).get_text()
                 
-                if address == "Michale-maggistr 10, 8046 Zürich":
-                    address = "Michael-Maggi-Strasse 10, 8046 Zürich"
-
-                distance = self.get_distance(address)
-
-                sleep(3)
-
-                t = [price, rooms, meters, address, distance]
-                data.append(t)
+                t = [price, rooms, meters, address]
+                self.data.append(t)
 
                 if show == True:
                     print(t)
 
             sleep(timeout)
 
+        with open(path, mode="w", newline="") as file:
+            w = writer(file)
+            w.writerows(self.data)
+
+        print(f"CSV file '{path}' created successfully")
+
+    def get_distance(self, address):
+        geolocator = Nominatim(user_agent="myapp")
+
+        target = geolocator.geocode(address)
+        destination = geolocator.geocode("Rämistrasse 101 8092 Zurich") # eth address
+
+        gps_targ = (target.latitude, target.longitude)
+        gps_dest = (destination.latitude, destination.longitude)
+
+        dist = distance.geodesic(gps_dest, gps_targ).km
+        return round(dist, 2)
+
+    def write_distances(self, addresses, path="data/distances.csv", timeout=7, show=True):
+        distances = []
+        for address in addresses:
+            distance = self.get_distance(address)
+            distances.append(distance)
+
+            if show == True:
+                print(address, distance)
+
+            sleep(timeout)
+        
         with open(path, mode="w", newline="") as file:
             w = writer(file)
             w.writerows(data)
