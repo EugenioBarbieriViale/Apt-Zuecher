@@ -39,7 +39,7 @@ class WebScrape:
                 break
 
         meters = []
-        for i in range(8, len(space)):
+        for i in range(7, len(space)):
             if space[i].isdigit() and space[i] != "²":
                 meters.append(space[i])
 
