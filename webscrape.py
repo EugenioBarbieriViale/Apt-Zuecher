@@ -3,6 +3,10 @@ from time import sleep
 from bs4 import BeautifulSoup
 from csv import writer
 
+from geopy.geocoders import Nominatim
+from geopy import distance
+
+
 class WebScrape:
     def __init__(self, price, rooms):
         self.price = price
@@ -67,12 +71,22 @@ class WebScrape:
 
         return int(price)
 
+    def get_distance(self, address):
+        geolocator = Nominatim(user_agent="myapp")
+
+        target = geolocator.geocode(address)
+        destination = geolocator.geocode("Rämistrasse 101 8092 Zurich")
+
+        gps_targ = (target.latitude, target.longitude)
+        gps_dest = (destination.latitude, destination.longitude)
+
+        dist = distance.geodesic(gps_dest, gps_targ).km
+        return round(dist, 2)
+
     def get_data(self, start_page=1, end_page=51, timeout=2, path="data.csv", show=None):
         data = [
-            ["n", "price", "rooms", "meters", "address"]
+            ["price", "rooms", "meters", "address", "distance"]
         ]
-
-        c = 0
 
         for page in range(start_page, end_page):
             print(f"\n------- PAGE NUMBER {page} -------")
@@ -83,10 +97,16 @@ class WebScrape:
                 price = self.get_price(info)
                 rooms, meters = self.get_space(info)
                 address = info.find("address", attrs={"translate": "no"}).get_text()
+                
+                if address == "Michale-maggistr 10, 8046 Zürich":
+                    address = "Michael-Maggi-Strasse 10, 8046 Zürich"
 
-                t = [c, price, rooms, meters, address]
+                distance = self.get_distance(address)
+
+                sleep(3)
+
+                t = [price, rooms, meters, address, distance]
                 data.append(t)
-                c += 1
 
                 if show == True:
                     print(t)

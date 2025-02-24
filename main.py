@@ -1,31 +1,18 @@
 from os import path
+from time import sleep
 
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from geopy.geocoders import Nominatim
-from geopy import distance
-
 import webscrape
 
 
-filename = "homegate.csv"
+# filename = "data/homegate.csv"
+filename = "data/d.csv"
 
 if not path.isfile(filename):
     w = webscrape.WebScrape(None, None)
-    w.get_data(start_page=1, end_page=51, timeout=10, path=filename, show=True)
-
-def get_coordinates(address):
-    geolocator = Nominatim(user_agent="myapp")
-
-    target = geolocator.geocode(address)
-    destination = geolocator.geocode("Rämistrasse 101 8092 Zurich")
-
-    gps_targ = (target.latitude, target.longitude)
-    gps_dest = (destination.latitude, destination.longitude)
-
-    distance = distance.geodesic(gps_dest, gps_targ).km
-    return round(distance, 2)
+    w.get_data(start_page=1, end_page=51, timeout=7, path=filename, show=True)
 
 prices = pd.read_csv(filename, usecols=["price"]).values
 rooms = pd.read_csv(filename, usecols=["rooms"]).values
@@ -40,4 +27,5 @@ def show_graph():
     plt.scatter(meters, prices)
     plt.show()
 
-show_graph()
+def assign_score(p, r, m, d):
+    return p - r - m + d 
