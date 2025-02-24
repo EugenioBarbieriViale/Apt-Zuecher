@@ -16,4 +16,4 @@ import webscrape
 # print(distance)
 
 w = webscrape.WebScrape(None, None)
-w.get_data(50, timeout=10, show=True)
+w.get_data(start_page=1, end_page=51, timeout=10, show=True)

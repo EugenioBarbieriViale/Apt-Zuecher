@@ -49,10 +49,10 @@ class WebScrape:
             meters = rooms.replace("²", "")
             rooms = 0
 
-        if meters == "":
+        if meters == "" or meters == []:
             meters = 0
 
-        if rooms == "":
+        if rooms == "" or rooms == []:
             rooms = 0
 
         return float(rooms), int(meters)
@@ -67,14 +67,14 @@ class WebScrape:
 
         return int(price)
 
-    def get_data(self, n_pages, timeout=2, path="data.csv", show=None):
+    def get_data(self, start_page=1, end_page=51, timeout=2, path="data.csv", show=None):
         data = [
             ["n", "price", "rooms", "meters", "address"]
         ]
 
         c = 0
 
-        for page in range(n_pages):
+        for page in range(start_page, end_page):
             print(f"\n------- PAGE NUMBER {page} -------")
 
             self.reach_site(page)
