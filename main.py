@@ -20,12 +20,13 @@ addresses = pd.read_csv(filename, usecols=["address"]).values
 
 dist_file = "data/distances.csv"
 
-# if not path.isfile(dist_file):
-#     w = webscrape.WebScrape(None, None)
-#     w.write_distances(addresses, path=dist_file, timeout=8, show=True)
+if not path.isfile(dist_file):
+    w = webscrape.WebScrape(None, None)
+    w.write_distances(addresses, path=dist_file, timeout=1.1, show=True)
 
+distances = pd.read_csv(dist_file, usecols=["distance"]).values
 
-def show_graph():
+def price_meters_graph():
     plt.title("Apartments from homegate.ch")
     plt.xlabel("Square meters (m^2)")
     plt.ylabel("Price (CHF)")
@@ -33,4 +34,12 @@ def show_graph():
     plt.scatter(meters, prices)
     plt.show()
 
-show_graph()
+def price_dist_graph():
+    plt.title("Apartments from homegate.ch")
+    plt.xlabel("Distance from ETH (km)")
+    plt.ylabel("Price (CHF)")
+
+    plt.scatter(distances, prices)
+    plt.show()
+
+price_dist_graph()

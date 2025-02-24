@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from csv import writer
 from geopy.geocoders import Nominatim
 from geopy import distance
+from geopy.exc import GeocoderTimedOut
 
 
 class WebScrape:
@@ -99,11 +100,22 @@ class WebScrape:
 
         print(f"CSV file '{path}' created successfully")
 
-    def get_distance(self, address):
+    def get_coords(self, address):
         geolocator = Nominatim(user_agent="myapp")
 
-        target = geolocator.geocode(address)
-        destination = geolocator.geocode("Rämistrasse 101 8092 Zurich") # eth address
+        try:
+            target = geolocator.geocode(address, timeout=None)
+            destination = geolocator.geocode("Rämistrasse 101 8092 Zurich", timeout=None) # eth address
+            return target, destination
+
+        except GeocoderTimedOut:
+            return self.get_coords(address)
+
+    def get_distance(self, address):
+        target, destination = self.get_coords(address)
+
+        if target == None:
+            return -1.0
 
         gps_targ = (target.latitude, target.longitude)
         gps_dest = (destination.latitude, destination.longitude)
@@ -112,18 +124,23 @@ class WebScrape:
         return round(dist, 2)
 
     def write_distances(self, addresses, path="data/distances.csv", timeout=7, show=True):
-        distances = []
+        distances = [
+                ["distance"]
+        ]
+        i = 0
+
         for address in addresses:
             distance = self.get_distance(address)
-            distances.append(distance)
+            distances.append([distance])
 
             if show == True:
-                print(address, distance)
+                print(i, address, distance)
 
             sleep(timeout)
+            i += 1
         
         with open(path, mode="w", newline="") as file:
             w = writer(file)
-            w.writerows(data)
+            w.writerows(distances)
 
         print(f"CSV file '{path}' created successfully")
