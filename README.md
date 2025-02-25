@@ -11,3 +11,6 @@ To every apartment is then assigned a score, which is based on the four features
 - requests
 - beautifulsoup4
 - geopy
+
+
+The data was gathered in February 2025
