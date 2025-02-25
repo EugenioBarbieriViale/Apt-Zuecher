@@ -44,42 +44,51 @@ def price_dist_graph():
     plt.show()
 
 
-def loss(p, m, r, d):
-    if p != 0.0 and m != 0.0:
-        return p / m 
+def loss(p, m, r, d, weights):
+    if p != 0.0 and m != 0.0 and r != 0.0:
+        return (p * weights[0] / (m * weights[1])) + (d * weights[2] /  (r * weights[3]))
     return 10.0
 
 limit_price = 4000
 limit_rooms = 3.0
+
+lst_prices = []
+lst_meters = []
+lst_rooms = []
+lst_distances = []
 
 targets = []
 for i in range(len(prices)):
     if prices[i] <= limit_price and rooms[i] >= limit_rooms:
         targets.append([prices[i], meters[i], rooms[i], addresses[i], distances[i]])
 
-max_price = max(targets[1:])[0][0]
-max_meter = max(targets[1:])[1][0]
-max_room = max(targets[1:])[2][0]
-max_distance = max(targets[1:])[4][0]
-# print(max_price, max_meters, max_rooms, max_distances)
+        lst_prices.append(prices[i][0])
+        lst_meters.append(meters[i][0])
+        lst_rooms.append(rooms[i][0])
+        lst_distances.append(distances[i][0])
+
+max_price = max(lst_prices)
+max_meter = max(lst_meters)
+max_room = max(lst_rooms)
+max_distance = max(lst_distances)
+
+# price, meters, rooms, distance
+weights = [0.4, 0.7, 0.9, 0.4]
 
 scores = []
 for i in range(len(targets)):
-    p = float(targets[i][0][0]) / float(max_price)
-    m = float(targets[i][1][0]) / float(max_meter)
-    r = float(targets[i][2][0]) / float(max_room)
-    d = float(targets[i][4][0]) / float(max_distance)
+    p = float(lst_prices[i]) / float(max_price)
+    m = float(lst_meters[i]) / float(max_meter)
+    r = float(lst_rooms[i]) / float(max_room)
+    d = float(lst_distances[i]) / float(max_distance)
 
-    score = loss(p, m, r, d)
+    score = loss(p, m, r, d, weights)
     scores.append(score)
 
 np_scores = array(scores)
 sorted_indices = np_scores.argsort()
-# sorted_scores = np_scores[sorted_indices]
+sorted_scores = np_scores[sorted_indices]
 
-# scores = list(enumerate(scores))
-# scores.sort(key=lambda:x[1])
-
-for i in reversed(range(10)):
+for i in range(10):
     best_apartment = targets[sorted_indices[i]]
-    print(best_apartment[0][0], best_apartment[1][0], best_apartment[2][0], best_apartment[3][0])
+    print("Score:", round(sorted_scores[i], 2), best_apartment[0][0], best_apartment[1][0], best_apartment[2][0], best_apartment[3][0], best_apartment[4][0])
