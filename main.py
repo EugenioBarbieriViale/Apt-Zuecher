@@ -7,8 +7,9 @@ from numpy import array, argsort
 
 import webscrape
 
+dirname = "data"
 
-filename = "data/homegate.csv"
+filename = dirname + "/homegate.csv"
 
 if not path.isfile(filename):
     w = webscrape.WebScrape(None, None)
@@ -19,7 +20,7 @@ rooms = pd.read_csv(filename, usecols=["rooms"]).values
 meters = pd.read_csv(filename, usecols=["meters"]).values
 addresses = pd.read_csv(filename, usecols=["address"]).values
 
-dist_file = "data/distances.csv"
+dist_file = dirname + "/distances.csv"
 
 if not path.isfile(dist_file):
     w = webscrape.WebScrape(None, None)
