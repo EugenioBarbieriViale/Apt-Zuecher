@@ -5,6 +5,9 @@
 
 \usepackage{listings}
 \usepackage{color}
+\usepackage{graphicx}
+\graphicspath{ {../images/} }
+
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -27,7 +30,7 @@
   tabsize=3
 }
 
-\title{APZücher}
+\title{Apt-Zücher}
 \author{Eugenio Barbieri Viale}
 \date{12 maggio 2025}
 
@@ -35,9 +38,22 @@
 \setlength{\parindent}{0pt}
 
 \maketitle
-Il progamma consiste di due file:
+Il progetto consiste di due programmi in Python:
 \begin{verbatim} main.py \end{verbatim} 
 \begin{verbatim} webscrape.py \end{verbatim}
+Il primo elabora i dati, genera i grafici e la lista degli appartamenti migliori. \\
+Il secondo ricava le informazioni degli appartamenti dal sito \textit{homegate.ch} e per ognuno calcola la distanza dall'ETH, grazie alle coordinate GPS ottenute dall'indirizzo.
+
+\newpage
+Gli appartamenti di cui non è stato possibile ricavare le informazioni sono rappresentati nel grafico con il valore $0$.
+
+\includegraphics[scale=0.65]{homegate_meters}
+
+È possibile notare che all'aumentare dei metri quadri aumenta anche il prezzo, come ci si aspetterebbe. Il tipo di andamento che meglio descrive questa tendenza potrebbe essere lineare.
+
+\includegraphics[scale=0.65]{homegate_distances}
+
+Si può vedere che purtroppo gli appartamenti più costosi sono anche quelli più vicini all' ETH.
 
 \newpage
 \begin{verbatim}
